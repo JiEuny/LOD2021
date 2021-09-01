@@ -1,28 +1,30 @@
 <template>
   <div>
-    <h2 style=" margin-left: 30px; margin-top: 20px  ">Keyword: {{$store.state.keyword}}</h2>
-    <!-- <button v-on:click=getKeyword>qweqr</button> -->
-    <!-- {{$keyword}} -->
-    <div class="data" v-for="gd in getGraphList" :key="gd.id">
+    <h2 style="margin-left: 30px; margin-top: 20px">
+      Keyword: {{ $store.state.keyword }}
+    </h2>
+    <div class="data" v-for="gd in getGraphList" :key="gd.graphURI">
       <el-row>
         <el-col :span="4">
           <div class="grid-content bg-purple">
             <br />
             <div class="imgbox-updated">
-                <img class="img" v-bind:src="gd.imageLink" v-bind:alt="'Park-' + gd.id">
+              <img
+                class="img"
+                v-bind:src="gd.imageLink"
+                v-bind:alt="'Park-' + gd.id"
+              />
             </div>
             <br />
           </div>
         </el-col>
         <el-col :span="20">
-<!--          <el-row>-->
-<!--            <el-col :span="4" class="park">{{gd.parking}}</el-col>-->
-<!--          </el-row>-->
-          <br/>
-          <div class="name">{{gd.parkingLot}}</div>
-          <el-row> <!--gd.parking -> will be graph name -->
-<!--              <router-link :to="`/detail/${gd.parking}`"><el-col :span="2" class="btn">LOD</el-col> </router-link>-->
-              <router-link :to="{ name: 'Detail', params: { graph_obj: gd }}"><el-col :span="2" class="btn">LOD</el-col> </router-link>
+          <br />
+          <div class="name">{{ gd.graphURI }}</div>
+          <el-row>
+            <router-link :to="{ name: 'Detail', params: { graph_obj: gd.graphName } }"
+              ><el-col :span="2" class="btn">LOD</el-col>
+            </router-link>
             <el-col :span="2" class="btn">View Map</el-col>
           </el-row>
         </el-col>
@@ -32,7 +34,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from "axios";
 
 export default {
   name: "Select",
@@ -40,49 +42,56 @@ export default {
   data() {
     return {
       keyword: this.$store.state.keyword,
-        //getGraphList: [] // it will uncommented once getKeyword data prepared
-        //Note-> hardcoded array for now, this result will populate from getKeyword method (props name in objects are taken randomly for binding testing)
-        getGraphList: [
-            {id:1, parkingLot : 'http://www.city-hub.kr/ontologies/2019/1/parking#parkinglot_yt_lot_1', parking:'Yatap first transfer parking lot', lan:'forMap', lat:'forMap', imageLink: require('@/assets/images/smart_city_ontology.jpg')},
-            {id:2, parkingLot: 'http://www.city-hub.kr/ontologies/2019/1/parking#parkingspot_23_yt_lot_1', parking:'Yatap second transfer parking lot', lan:'forMap', lat:'forMap', imageLink: require('@/assets/images/smart_city_ontology.jpg')},
-            {id:3, parkingLot: 'http://www.city-hub.kr/ontologies/2019/1/parking#parkinglot_yt_lot_3', parking:'CGV Yatap parking lot', lan:'forMap', lat:'forMap', imageLink: require('@/assets/images/smart_city_ontology.jpg')}
-        ]
+      prefixFormat: "simple",
+      user: "user2",
+      accessToken:
+        "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0eXBlIjoiYWRtaW5TeXN0ZW0iLCJ1c2VySWQiOiJzZW1hbnRpYyIsIm5pY2tuYW1lIjoia2V0aV9zZW1hbnRpYyIsImVtYWlsIjoic2VtYW50aWNAYWRtaW4uY29tIiwicm9sZSI6IlNlbWFudGljX0FkbWluIiwiaWF0IjoxNjI4NTkwNjEyLCJleHAiOjE2Mjg1OTQyMTIsImF1ZCI6IjNlUm9maHJsNndQV2F1WDJ1MEdUIiwiaXNzIjoidXJuOmRhdGFodWI6Y2l0eWh1YjpzZWN1cml0eSJ9.hyuhB6k5gs_ZAW-2p_j4JXRjLPMhsNM3ZqVCFmjRO3CLqj9zGuq99pBI3Qvc6X3kVlemk9xy0MaIRUzPhoK4Q-QANmABT0hfKVlVWaeTpiP6SwWvuctCrI2yaPWSYTIptpBv6ebF_caomI4Z3_OXyUSVAM--nt0eypZUUohSImJKz3sQ7caDiPSut8lrVyPrk8OutZ_Vlbat8jaJ6bh6U8GHghe4efzzb5p7nP6Ew6qsq5FweGzA_5HQNTEkyYvIE6wu5EunMFBaDToNIySY1aKe786lwD_W00EEXOlmOXLMB7ekkz_srnvhia3q517-tQwv1szrbfyy5rBPamAM7Q",
+      graphList: [],
+      prefixList: [],
+      getGraphList: [],
     };
   },
   mounted() {
     this.getKeyword();
-
   },
   methods: {
-    // getKeyword() {
-    //   const baseURI = "http://localhost:3000";
-    //   this.$http.get(`${baseURI}/graphs`).then((result) => {
-    //     // alert(result.data);
-    //     this.gets = result.data;
-    //     // alert(this.keyword)
-    //   });
-    //   alert(this.gets)
-    // },
-    // getKeyword() {
-    //   // const axios = require('axios');
-    //   axios.get('http://192.168.0.20:3000/graphs')
-    //   .then(res => {
-    //     this.gets = res.data.map(r => r.data)
-    //   })
-    //   alert(this.gets);
-    // }
-
     getKeyword() {
-      const baseURI = "http://localhost:3000";
-      axios.get(baseURI+'/graphList').then(res => {
-        this.getGraphList = res.data;
-        // alert(res.data.graphList);
-        console.log(this.getGraphList.graphList);
-        axios.get(baseURI+'/graph').then(res2 => {
-          console.log(res2.data);
+      const baseURI = "http://192.168.0.16:8080/semantic/api/v1";
+      axios
+        .get(baseURI + "/graphs", {
+          params: {
+            graphType: "ontology,instance",
+            keyword: this.keyword,
+            prefixFormat: this.prefixFormat,
+            user: this.user,
+            accessToken: this.accessToken,
+          },
         })
-      })
-    }
+        .then((res) => {
+          this.prefixList = res.data.prefixList;
+          this.graphList = res.data.graphList;
+          for (const prefix of this.prefixList) {
+            for (let key of Object.keys(prefix)) {
+
+              for (var graph of this.graphList) {
+
+                if (!graph.indexOf(key + ":")) {
+                  this.getGraphList.push({
+                    graphURI: graph.replace(key + ":", prefix[key]),
+                    graphName: graph
+                  })
+                } else {
+                  this.getGraphList.push({
+                    graphURI: graph,
+                    graphName: key
+                  })
+                }
+
+              }
+            }
+          }
+        });
+    },
   },
   created() {},
 };
@@ -124,12 +133,12 @@ h2 {
 }
 
 .imgbox-updated {
-    height: 115px;
-    width: 210px;
-    border: solid 1px;
-    margin: 0px 35px 0px 35px;
-    background-color: #b5bec3;
-    box-shadow: 2px 2px 2px 1px rgba(128, 128, 128, 0.1);
+  height: 115px;
+  width: 210px;
+  border: solid 1px;
+  margin: 0px 35px 0px 35px;
+  background-color: #b5bec3;
+  box-shadow: 2px 2px 2px 1px rgba(128, 128, 128, 0.1);
 }
 
 .img {
@@ -154,7 +163,6 @@ h2 {
 
 .grid-content {
   min-height: 36px;
-  padding: 3px
+  padding: 3px;
 }
-
 </style>
